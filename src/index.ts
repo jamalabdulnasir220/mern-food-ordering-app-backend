@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import authRouter from "./routes/authRouter.js";
 import { v2 as cloudinary } from "cloudinary";
 import restaurantRouter from "./routes/restaurantRouter.js";
+import allRestaurantsRouter from "./routes/allRestaurantsRouter.js";
 
 mongoose
   .connect(`${process.env.MONGODB_CONNECTION_STRING}/foodOrderingApp` as string)
@@ -35,6 +36,7 @@ app.get("/health", async (req: Request, res: Response) => {
 
 app.use("/api", authRouter);
 app.use("/api", restaurantRouter)
+app.use("/api", allRestaurantsRouter)
 
 // connectDB()
 //   .then(() => {
