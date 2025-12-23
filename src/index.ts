@@ -28,17 +28,20 @@ const app = express();
 const PORT = 3000;
 
 // Middlewares
-app.use(express.json());
+
 app.use(cors());
+
+app.use("/api/order/checkout/webhook", express.raw({ type: "*/*" }));
+app.use(express.json());
 
 app.get("/health", async (req: Request, res: Response) => {
   res.send({ message: "Health OK!!" });
 });
 
 app.use("/api", authRouter);
-app.use("/api", restaurantRouter)
-app.use("/api", allRestaurantsRouter)
-app.use("/api/order", orderRouter)
+app.use("/api", restaurantRouter);
+app.use("/api", allRestaurantsRouter);
+app.use("/api/order", orderRouter);
 
 // connectDB()
 //   .then(() => {
