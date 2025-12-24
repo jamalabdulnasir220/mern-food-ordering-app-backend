@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import Restaurant from "../models/restaurant.js";
 import cloudinary from "cloudinary";
 import mongoose from "mongoose";
+import Order from "../models/order.js";
 
 export const createRestaurant = async (req: Request, res: Response) => {
   try {
@@ -67,10 +68,9 @@ export const updateMyRestaurant = async (req: Request, res: Response) => {
       restaurant.imageUrl = imageUrl;
     }
 
-    await restaurant.save()
+    await restaurant.save();
 
-    res.status(200).send(restaurant)
-
+    res.status(200).send(restaurant);
   } catch (error) {
     console.log("Error updating the restaurant", error);
     res.status(500).json({ message: "Internal server error" });
@@ -89,4 +89,21 @@ const uploadImage = async (file: Express.Multer.File) => {
   // After the upload is successful, we should have the image url in the response
 
   return uploadResponse.url;
+};
+
+export const getMyRestaurantOrders = async (req: Request, res: Response) => {
+  try {
+    const restaurant = await Restaurant.findOne({ user: req.userId });
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found." });
+    }
+
+    const orders = await Order.find({ restaurant: restaurant._id })
+      .populate("restaurant")
+      .populate("user");
+    res.json(orders);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };

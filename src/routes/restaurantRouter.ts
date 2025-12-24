@@ -3,10 +3,12 @@ import multer from "multer";
 import {
   createRestaurant,
   getMyRestaurant,
+  getMyRestaurantOrders,
   updateMyRestaurant,
 } from "../controllers/restaurantController.js";
 import { jwtCheck, parseJwt } from "../middleware/auth.js";
 import { validateMyRestaurantData } from "../middleware/validation.js";
+import { updateMyOrderStatus } from "../controllers/orderController.js";
 
 const restaurantRouter = express.Router();
 
@@ -30,6 +32,10 @@ restaurantRouter.post(
   parseJwt,
   createRestaurant
 );
+
+restaurantRouter.get("/my/restaurant/order", jwtCheck, parseJwt, getMyRestaurantOrders)
+
+restaurantRouter.patch("/my/restaurant/order/:orderId/status", jwtCheck, parseJwt, updateMyOrderStatus)
 
 restaurantRouter.get("/my/restaurant", jwtCheck, parseJwt, getMyRestaurant);
 

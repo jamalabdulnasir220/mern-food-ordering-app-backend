@@ -7,14 +7,41 @@ const STRIPE = new Stripe(process.env.STRIPE_API_KEY as string);
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const STRIPE_ENDPOINT_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
 
+export const updateMyOrderStatus = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const restaurant = await Restaurant.findById(order.restaurant);
+
+    if (restaurant?.user?._id.toString() !== req.userId) {
+      return res.status(401).send();
+    }
+
+    order.status = status;
+
+    await order.save();
+
+    res.status(200).json(order);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const getMyOrder = async (req: Request, res: Response) => {
   try {
     const orders = await Order.find({ user: req.userId })
       .populate("restaurant")
       .populate("user");
-    
-    res.json(orders)
-    
+
+    res.json(orders);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
