@@ -21,8 +21,14 @@ const userSchema = new mongoose.Schema({
   country: {
     type: String,
   },
+  role: {
+    type: String,
+    enum: ["customer", "restaurant_manager"],
+    default: "customer",
+    required: true,
+  },
 });
 
-const User = mongoose.model("User", userSchema)
+const User = mongoose.model("User", userSchema);
 
 export default User;

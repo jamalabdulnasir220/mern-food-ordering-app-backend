@@ -3,13 +3,23 @@ import User from "../models/user.js";
 
 const createCurrentUser = async (req: Request, res: Response) => {
   try {
-    const { auth0Id } = req.body;
+    const { auth0Id, role } = req.body;
     // Check if user already exists
     const existingUser = await User.findOne({ auth0Id });
     if (existingUser) {
-      return res.status(200).send();
+      // If existing user doesn't have a role, set it to customer (for backward compatibility)
+      if (!existingUser.role) {
+        existingUser.role = "customer";
+        await existingUser.save();
+      }
+      return res.status(200).json(existingUser.toObject());
     }
-    const newUser = new User(req.body);
+    // Ensure role is set, default to "customer" if not provided
+    const userData = {
+      ...req.body,
+      role: role || "customer",
+    };
+    const newUser = new User(userData);
     await newUser.save();
     res.status(201).json(newUser.toObject());
   } catch (error) {
