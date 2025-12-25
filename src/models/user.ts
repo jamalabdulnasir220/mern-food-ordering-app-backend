@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
   country: {
     type: String,
   },
+  favorites: {
+    type: [String],
+    default: [],
+  },
   role: {
     type: String,
     enum: ["customer", "restaurant_manager"],

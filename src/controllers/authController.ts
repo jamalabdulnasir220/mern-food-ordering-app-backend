@@ -31,7 +31,7 @@ const createCurrentUser = async (req: Request, res: Response) => {
 const updateUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
-    const { name, addressLine1, country, city } = req.body;
+    const { name, addressLine1, country, city, favorites } = req.body;
 
     const user = await User.findById(userId);
 
@@ -43,6 +43,9 @@ const updateUser = async (req: Request, res: Response) => {
     user.addressLine1 = addressLine1;
     user.country = country;
     user.city = city;
+    if (favorites) {
+        user.favorites = favorites;
+    }
 
     const updatedUser = await user.save();
 
@@ -69,4 +72,28 @@ const getUser = async (req: Request, res: Response) => {
   }
 };
 
-export { createCurrentUser, updateUser, getUser };
+
+const updateFavorites = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    const { favorites } = req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.favorites = favorites;
+
+    const updatedUser = await user.save();
+
+    res.status(200).json(updatedUser.toObject());
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export { createCurrentUser, updateUser, getUser, updateFavorites };
+

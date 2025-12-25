@@ -70,6 +70,7 @@ export const searchRestaurants = async (req: Request, res: Response) => {
   }
 };
 
+
 export const getRestaurant = async (req: Request, res: Response) => {
   try {
     const restaurantId = req.params.restaurantId
@@ -86,3 +87,20 @@ export const getRestaurant = async (req: Request, res: Response) => {
     res.status(500).json({message: "Internal server error"})
   }
 }
+
+export const getRestaurantsByIds = async (req: Request, res: Response) => {
+  try {
+    const ids = req.query.ids as string;
+    if (!ids) {
+      return res.status(400).json({ message: "No IDs provided" });
+    }
+
+    const idsArray = ids.split(",");
+    const restaurants = await Restaurant.find({ _id: { $in: idsArray } });
+
+    res.json(restaurants);
+  } catch (error) {
+    console.log("Error getting restaurants by IDs", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

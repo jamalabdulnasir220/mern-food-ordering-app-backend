@@ -2,10 +2,13 @@ import express from "express";
 import { param } from "express-validator";
 import {
   getRestaurant,
+  getRestaurantsByIds,
   searchRestaurants,
 } from "../controllers/allRestaurantsController.js";
 
 const allRestaurantsRouter = express.Router();
+
+allRestaurantsRouter.get("/restaurants/by-ids", getRestaurantsByIds);
 
 allRestaurantsRouter.get(
   "/restaurants/:restaurantId",
