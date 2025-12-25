@@ -27,10 +27,17 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["customer", "restaurant_manager"],
+    enum: ["customer", "restaurant_manager", "admin"],
     default: "customer",
     required: true,
   },
+  applicationStatus: {
+    type: String, // 'pending', 'approved', 'rejected'
+    default: function() {
+      // @ts-ignore
+      return this.role === 'restaurant_manager' ? 'pending' : 'approved';
+    }
+  }
 });
 
 const User = mongoose.model("User", userSchema);
