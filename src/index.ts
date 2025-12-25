@@ -14,7 +14,17 @@ const app = express();
 const PORT = 3000;
 
 // Middlewares
-app.use(cors());
+// CORS configuration - allow frontend URL from environment variable or default to allow all in development
+const allowedOrigins = process.env.FRONTEND_URL
+  ? [process.env.FRONTEND_URL]
+  : undefined; // undefined means allow all (for development)
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 app.use("/api/order/checkout/webhook", express.raw({ type: "*/*" }));
 app.use(express.json());
 
@@ -30,7 +40,9 @@ app.use("/api/order", orderRouter);
 async function startServer() {
   try {
     // Connect to MongoDB
-    await mongoose.connect(`${process.env.MONGODB_CONNECTION_STRING}/foodOrderingApp` as string);
+    await mongoose.connect(
+      `${process.env.MONGODB_CONNECTION_STRING}/foodOrderingApp` as string
+    );
     console.log("Connected to the database");
 
     // Configure Cloudinary
