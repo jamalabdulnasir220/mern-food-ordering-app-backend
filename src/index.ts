@@ -7,6 +7,7 @@ import { v2 as cloudinary } from "cloudinary";
 import restaurantRouter from "./routes/restaurantRouter.js";
 import allRestaurantsRouter from "./routes/allRestaurantsRouter.js";
 import orderRouter from "./routes/orderRouter.js";
+import adminRouter from "./routes/adminRouter.js";
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/api", authRouter);
 app.use("/api", restaurantRouter);
 app.use("/api", allRestaurantsRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/admin", adminRouter);
 
 async function startServer() {
   try {

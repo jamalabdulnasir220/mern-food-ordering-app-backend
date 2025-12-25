@@ -18,6 +18,7 @@ const createCurrentUser = async (req: Request, res: Response) => {
     const userData = {
       ...req.body,
       role: role || "customer",
+      applicationStatus: role === "restaurant_manager" ? "pending" : "approved",
     };
     const newUser = new User(userData);
     await newUser.save();

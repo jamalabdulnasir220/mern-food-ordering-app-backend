@@ -26,7 +26,7 @@ const upload = multer({
 
 restaurantRouter.post(
   "/my/restaurant",
-  upload.single("imageFile"),
+  upload.any(),
   validateMyRestaurantData,
   jwtCheck,
   parseJwt,
@@ -41,7 +41,7 @@ restaurantRouter.get("/my/restaurant", jwtCheck, parseJwt, getMyRestaurant);
 
 restaurantRouter.put(
   "/my/restaurant",
-  upload.single("imageFile"),
+  upload.any(),
   validateMyRestaurantData,
   jwtCheck,
   parseJwt,

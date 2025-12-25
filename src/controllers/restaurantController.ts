@@ -1,8 +1,39 @@
 import type { Request, Response } from "express";
 import Restaurant from "../models/restaurant.js";
-import cloudinary from "cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 import mongoose from "mongoose";
 import Order from "../models/order.js";
+
+const uploadToCloudinary = async (file: Express.Multer.File) => {
+  const image = file;
+  const base64Image = Buffer.from(image.buffer).toString("base64");
+  const dataURI = `data:${image.mimetype};base64,${base64Image}`;
+  const uploadResponse = await cloudinary.uploader.upload(dataURI);
+  return uploadResponse.url;
+};
+
+const processFiles = async (req: Request) => {
+  const files = req.files as Express.Multer.File[];
+  let restaurantImageUrl = "";
+  const menuItemImageUrls: Record<number, string> = {};
+
+  if (files) {
+    for (const file of files) {
+      const url = await uploadToCloudinary(file);
+      if (file.fieldname === "imageFile") {
+        restaurantImageUrl = url;
+      } else {
+        const match = file.fieldname.match(/menuItems\[(\d+)\]\[imageFile\]/);
+        if (match && match[1]) {
+          const index = parseInt(match[1]);
+          menuItemImageUrls[index] = url;
+        }
+      }
+    }
+  }
+
+  return { restaurantImageUrl, menuItemImageUrls };
+};
 
 export const createRestaurant = async (req: Request, res: Response) => {
   try {
@@ -16,13 +47,22 @@ export const createRestaurant = async (req: Request, res: Response) => {
         .json({ message: "User restaurant already exists" });
     }
 
-    const imageUrl = await uploadImage(req.file as Express.Multer.File);
+    const { restaurantImageUrl, menuItemImageUrls } = await processFiles(req);
 
     const restaurant = new Restaurant(req.body);
-
-    restaurant.imageUrl = imageUrl;
+    restaurant.imageUrl = restaurantImageUrl;
     restaurant.user = new mongoose.Types.ObjectId(userId);
     restaurant.lastUpdated = new Date();
+
+    if (req.body.menuItems) {
+        req.body.menuItems.forEach((item: any, index: number) => {
+            if (menuItemImageUrls[index]) {
+                item.imageUrl = menuItemImageUrls[index];
+            }
+        });
+        restaurant.menuItems = req.body.menuItems;
+    }
+
     await restaurant.save();
     res.status(201).send(restaurant);
   } catch (error) {
@@ -60,14 +100,29 @@ export const updateMyRestaurant = async (req: Request, res: Response) => {
     restaurant.deliveryPrice = req.body.deliveryPrice;
     restaurant.estimatedDeliveryTime = req.body.estimatedDeliveryTime;
     restaurant.cuisines = req.body.cuisines;
-    restaurant.menuItems = req.body.menuItems;
-    restaurant.lastUpdated = new Date();
-
-    if (req.file) {
-      const imageUrl = await uploadImage(req.file as Express.Multer.File);
-      restaurant.imageUrl = imageUrl;
+    
+    // Assign menuItems from body first (contains text fields and existing imageUrls if sent)
+    // Note: If menuItems is empty array in body, it clears them.
+    if (req.body.menuItems) {
+        restaurant.menuItems = req.body.menuItems;
     }
 
+    const { restaurantImageUrl, menuItemImageUrls } = await processFiles(req);
+
+    if (restaurantImageUrl) {
+      restaurant.imageUrl = restaurantImageUrl;
+    }
+
+    // Update menu items with new uploaded images
+    if (restaurant.menuItems) {
+        restaurant.menuItems.forEach((item: any, index: number) => {
+            if (menuItemImageUrls[index]) {
+                item.imageUrl = menuItemImageUrls[index];
+            }
+        });
+    }
+
+    restaurant.lastUpdated = new Date();
     await restaurant.save();
 
     res.status(200).send(restaurant);
@@ -75,20 +130,6 @@ export const updateMyRestaurant = async (req: Request, res: Response) => {
     console.log("Error updating the restaurant", error);
     res.status(500).json({ message: "Internal server error" });
   }
-};
-
-const uploadImage = async (file: Express.Multer.File) => {
-  // We get the image file in our req after it has been stored in memory
-  const image = file;
-  // We then convert the image buffer into a base64 string.
-  const base64Image = Buffer.from(image.buffer).toString("base64");
-  // Then we define some data uri, about the image. mimetype is the type of the image. png/jgp etc.
-  const dataURI = `data:${image.mimetype};base64,${base64Image}`;
-  // We will then upload the image to cloudinary
-  const uploadResponse = await cloudinary.v2.uploader.upload(dataURI);
-  // After the upload is successful, we should have the image url in the response
-
-  return uploadResponse.url;
 };
 
 export const getMyRestaurantOrders = async (req: Request, res: Response) => {
