@@ -12,6 +12,9 @@ export const searchRestaurants = async (req: Request, res: Response) => {
     // I am defining the query object, i want the database to query by
     let query: any = {};
 
+    // Only show approved restaurants in public search
+    query["approvalStatus"] = "approved";
+
     // The query object has city key and we defining a regular expressing that says the city case should be ignored.(upper or lower).
     query["city"] = new RegExp(city, "i");
     const cityCheck = await Restaurant.countDocuments(query);
@@ -96,7 +99,10 @@ export const getRestaurantsByIds = async (req: Request, res: Response) => {
     }
 
     const idsArray = ids.split(",");
-    const restaurants = await Restaurant.find({ _id: { $in: idsArray } });
+    const restaurants = await Restaurant.find({ 
+      _id: { $in: idsArray },
+      approvalStatus: "approved" // Only show approved restaurants
+    });
 
     res.json(restaurants);
   } catch (error) {

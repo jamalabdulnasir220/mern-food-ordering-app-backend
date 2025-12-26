@@ -24,6 +24,11 @@ const restaurantSchema = new mongoose.Schema({
   menuItems: [menuItemSchema],
   imageUrl: { type: String, required: true },
   lastUpdated: { type: Date, required: true },
+  approvalStatus: { 
+    type: String, 
+    enum: ["pending", "approved", "rejected"], 
+    default: "approved" // Default to approved for backward compatibility
+  },
 });
 
 const Restaurant = mongoose.model("Restaurant", restaurantSchema);
