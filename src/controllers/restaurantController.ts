@@ -53,6 +53,7 @@ export const createRestaurant = async (req: Request, res: Response) => {
     restaurant.imageUrl = restaurantImageUrl;
     restaurant.user = new mongoose.Types.ObjectId(userId);
     restaurant.lastUpdated = new Date();
+    restaurant.approvalStatus = "pending"; // New restaurants need admin approval
 
     if (req.body.menuItems) {
         req.body.menuItems.forEach((item: any, index: number) => {
