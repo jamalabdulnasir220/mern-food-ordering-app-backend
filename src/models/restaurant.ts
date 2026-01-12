@@ -31,6 +31,13 @@ const restaurantSchema = new mongoose.Schema({
   },
 });
 
+// Add indexes for frequently queried fields
+restaurantSchema.index({ city: 1, approvalStatus: 1 }); // For search queries
+restaurantSchema.index({ user: 1 }); // For finding restaurant by user
+restaurantSchema.index({ approvalStatus: 1 }); // For admin queries
+restaurantSchema.index({ lastUpdated: -1 }); // For sorting
+restaurantSchema.index({ restaurantName: "text", cuisines: "text" }); // Text search index
+
 const Restaurant = mongoose.model("Restaurant", restaurantSchema);
 
 export default Restaurant;

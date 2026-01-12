@@ -4,7 +4,10 @@ import Restaurant from "../models/restaurant.js";
 
 export const getRestaurantManagers = async (req: Request, res: Response) => {
   try {
-    const managers = await User.find({ role: "restaurant_manager" }).sort({ _id: -1 });
+    const managers = await User.find({ role: "restaurant_manager" })
+      .select("-favorites") // Exclude unnecessary fields
+      .sort({ _id: -1 })
+      .lean();
     res.json(managers);
   } catch (error) {
     console.log("Error getting restaurant managers", error);
@@ -20,7 +23,7 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
     const user = await User.findById(userId);
 
     if (!user) {
-        return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     user.applicationStatus = status;
@@ -37,7 +40,9 @@ export const getAllRestaurants = async (req: Request, res: Response) => {
   try {
     const restaurants = await Restaurant.find()
       .populate("user", "name email")
-      .sort({ _id: -1 });
+      .select("-menuItems") // Exclude menuItems to reduce payload size
+      .sort({ _id: -1 })
+      .lean();
     res.json(restaurants);
   } catch (error) {
     console.log("Error getting all restaurants", error);
@@ -45,7 +50,10 @@ export const getAllRestaurants = async (req: Request, res: Response) => {
   }
 };
 
-export const updateRestaurantApprovalStatus = async (req: Request, res: Response) => {
+export const updateRestaurantApprovalStatus = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { restaurantId } = req.params;
     const { status } = req.body;

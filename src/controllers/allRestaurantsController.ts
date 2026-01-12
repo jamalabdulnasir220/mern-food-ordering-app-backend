@@ -50,6 +50,7 @@ export const searchRestaurants = async (req: Request, res: Response) => {
     const skip = (page - 1) * pageSize;
 
     const restaurants = await Restaurant.find(query)
+      .select("-menuItems") // Exclude menuItems from search results to reduce payload size
       .sort({ [sortOptions]: 1 })
       .skip(skip)
       .limit(pageSize)
@@ -73,23 +74,21 @@ export const searchRestaurants = async (req: Request, res: Response) => {
   }
 };
 
-
 export const getRestaurant = async (req: Request, res: Response) => {
   try {
-    const restaurantId = req.params.restaurantId
+    const restaurantId = req.params.restaurantId;
 
-    const restaurant = await Restaurant.findById(restaurantId)
+    const restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant) {
-      return res.status(404).json({message: "restaurant not found!!"})
+      return res.status(404).json({ message: "restaurant not found!!" });
     }
 
-    res.json(restaurant)
-
+    res.json(restaurant);
   } catch (error) {
-    console.log("Error getting restaurant", error)
-    res.status(500).json({message: "Internal server error"})
+    console.log("Error getting restaurant", error);
+    res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 export const getRestaurantsByIds = async (req: Request, res: Response) => {
   try {
@@ -99,10 +98,12 @@ export const getRestaurantsByIds = async (req: Request, res: Response) => {
     }
 
     const idsArray = ids.split(",");
-    const restaurants = await Restaurant.find({ 
+    const restaurants = await Restaurant.find({
       _id: { $in: idsArray },
-      approvalStatus: "approved" // Only show approved restaurants
-    });
+      approvalStatus: "approved", // Only show approved restaurants
+    })
+      .select("-menuItems") // Exclude menuItems to reduce payload size
+      .lean();
 
     res.json(restaurants);
   } catch (error) {

@@ -1,5 +1,6 @@
 import express, { type Request, type Response } from "express";
 import cors from "cors";
+import compression from "compression";
 import "dotenv/config";
 import mongoose from "mongoose";
 import authRouter from "./routes/authRouter.js";
@@ -11,8 +12,8 @@ import adminRouter from "./routes/adminRouter.js";
 
 const app = express();
 
-// PORT Number
-const PORT = 3000;
+// PORT Number - Use environment variable for Render
+const PORT = process.env.PORT || 3000;
 
 // Middlewares
 // CORS configuration - allow frontend URL from environment variable or default to allow all in development
@@ -20,9 +21,12 @@ const allowedOrigins = process.env.FRONTEND_URL
   ? [process.env.FRONTEND_URL]
   : undefined; // undefined means allow all (for development)
 
+// Compression middleware - reduces response size significantly
+app.use(compression());
+
 app.use(cors());
 app.use("/api/order/checkout/webhook", express.raw({ type: "*/*" }));
-app.use(express.json());
+app.use(express.json({ limit: "10mb" })); // Add limit to prevent large payloads
 
 app.get("/health", async (req: Request, res: Response) => {
   res.send({ message: "Health OK!!" });
@@ -36,9 +40,14 @@ app.use("/api/admin", adminRouter);
 
 async function startServer() {
   try {
-    // Connect to MongoDB
+    // Connect to MongoDB with optimized connection settings
     await mongoose.connect(
-      `${process.env.MONGODB_CONNECTION_STRING}/foodOrderingApp` as string
+      `${process.env.MONGODB_CONNECTION_STRING}/foodOrderingApp` as string,
+      {
+        maxPoolSize: 10, // Maintain up to 10 socket connections
+        serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+        socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      }
     );
     console.log("Connected to the database");
 
