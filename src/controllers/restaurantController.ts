@@ -56,12 +56,12 @@ export const createRestaurant = async (req: Request, res: Response) => {
     restaurant.approvalStatus = "pending"; // New restaurants need admin approval
 
     if (req.body.menuItems) {
-        req.body.menuItems.forEach((item: any, index: number) => {
-            if (menuItemImageUrls[index]) {
-                item.imageUrl = menuItemImageUrls[index];
-            }
-        });
-        restaurant.menuItems = req.body.menuItems;
+      req.body.menuItems.forEach((item: any, index: number) => {
+        if (menuItemImageUrls[index]) {
+          item.imageUrl = menuItemImageUrls[index];
+        }
+      });
+      restaurant.menuItems = req.body.menuItems;
     }
 
     await restaurant.save();
@@ -101,11 +101,11 @@ export const updateMyRestaurant = async (req: Request, res: Response) => {
     restaurant.deliveryPrice = req.body.deliveryPrice;
     restaurant.estimatedDeliveryTime = req.body.estimatedDeliveryTime;
     restaurant.cuisines = req.body.cuisines;
-    
+
     // Assign menuItems from body first (contains text fields and existing imageUrls if sent)
     // Note: If menuItems is empty array in body, it clears them.
     if (req.body.menuItems) {
-        restaurant.menuItems = req.body.menuItems;
+      restaurant.menuItems = req.body.menuItems;
     }
 
     const { restaurantImageUrl, menuItemImageUrls } = await processFiles(req);
@@ -116,11 +116,11 @@ export const updateMyRestaurant = async (req: Request, res: Response) => {
 
     // Update menu items with new uploaded images
     if (restaurant.menuItems) {
-        restaurant.menuItems.forEach((item: any, index: number) => {
-            if (menuItemImageUrls[index]) {
-                item.imageUrl = menuItemImageUrls[index];
-            }
-        });
+      restaurant.menuItems.forEach((item: any, index: number) => {
+        if (menuItemImageUrls[index]) {
+          item.imageUrl = menuItemImageUrls[index];
+        }
+      });
     }
 
     restaurant.lastUpdated = new Date();
@@ -135,14 +135,18 @@ export const updateMyRestaurant = async (req: Request, res: Response) => {
 
 export const getMyRestaurantOrders = async (req: Request, res: Response) => {
   try {
-    const restaurant = await Restaurant.findOne({ user: req.userId });
+    const restaurant = await Restaurant.findOne({ user: req.userId })
+      .select("_id")
+      .lean();
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found." });
     }
 
     const orders = await Order.find({ restaurant: restaurant._id })
-      .populate("restaurant")
-      .populate("user");
+      .populate("restaurant", "restaurantName imageUrl") // Only select needed fields
+      .populate("user", "name email") // Only select needed fields
+      .sort({ createdAt: -1 }) // Sort by most recent first
+      .lean();
     res.json(orders);
   } catch (error) {
     console.log(error);

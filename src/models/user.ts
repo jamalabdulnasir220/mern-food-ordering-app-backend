@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema({
   auth0Id: {
     type: String,
     required: true,
+    unique: true, // Add unique constraint for faster lookups
   },
   email: {
     type: String,
@@ -33,12 +34,16 @@ const userSchema = new mongoose.Schema({
   },
   applicationStatus: {
     type: String, // 'pending', 'approved', 'rejected'
-    default: function() {
+    default: function () {
       // @ts-ignore
-      return this.role === 'restaurant_manager' ? 'pending' : 'approved';
-    }
-  }
+      return this.role === "restaurant_manager" ? "pending" : "approved";
+    },
+  },
 });
+
+// Add indexes for frequently queried fields
+userSchema.index({ auth0Id: 1 }); // Already unique, but explicit index helps
+userSchema.index({ role: 1 }); // For admin queries filtering by role
 
 const User = mongoose.model("User", userSchema);
 

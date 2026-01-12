@@ -33,6 +33,11 @@ const orderSchema = new mongoose.Schema({
   },
 });
 
-const Order = mongoose.model("Order", orderSchema)
+// Add indexes for frequently queried fields
+orderSchema.index({ user: 1, createdAt: -1 }); // For user order queries
+orderSchema.index({ restaurant: 1, createdAt: -1 }); // For restaurant order queries
+orderSchema.index({ status: 1 }); // For filtering by status
 
-export default Order
+const Order = mongoose.model("Order", orderSchema);
+
+export default Order;
