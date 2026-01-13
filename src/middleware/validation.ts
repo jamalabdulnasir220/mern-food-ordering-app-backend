@@ -1,7 +1,7 @@
 import { body, validationResult } from "express-validator";
 import type { Request, Response, NextFunction } from "express";
 
-const handleValidationErrors = async (
+export const handleValidationErrors = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -46,5 +46,5 @@ export const validateMyRestaurantData = [
   body("menuItem.*.price")
     .isFloat({ min: 0 })
     .withMessage("Menu Item price is required and must be a positive number"),
-  handleValidationErrors
+  handleValidationErrors,
 ];

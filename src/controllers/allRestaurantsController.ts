@@ -49,9 +49,19 @@ export const searchRestaurants = async (req: Request, res: Response) => {
     const pageSize = 10;
     const skip = (page - 1) * pageSize;
 
+    // Map sort options
+    let sortQuery: any = {};
+    if (sortOptions === "averageRating") {
+      sortQuery = { averageRating: -1, totalReviews: -1 }; // Sort by rating descending, then by review count
+    } else if (sortOptions === "bestMatch") {
+      sortQuery = { lastUpdated: -1 }; // Best match defaults to most recently updated
+    } else {
+      sortQuery = { [sortOptions]: 1 };
+    }
+
     const restaurants = await Restaurant.find(query)
-      .select("-menuItems") // Exclude menuItems from search results to reduce payload size
-      .sort({ [sortOptions]: 1 })
+      .select("-menuItems") // Excluding menuItems from search results to reduce payload size
+      .sort(sortQuery)
       .skip(skip)
       .limit(pageSize)
       .lean();
@@ -102,7 +112,7 @@ export const getRestaurantsByIds = async (req: Request, res: Response) => {
       _id: { $in: idsArray },
       approvalStatus: "approved", // Only show approved restaurants
     })
-      .select("-menuItems") // Exclude menuItems to reduce payload size
+      .select("-menuItems") // Excluding menuItems to reduce payload size
       .lean();
 
     res.json(restaurants);
