@@ -38,7 +38,7 @@ export const updateMyOrderStatus = async (req: Request, res: Response) => {
 export const getMyOrder = async (req: Request, res: Response) => {
   try {
     const orders = await Order.find({ user: req.userId })
-      .populate("restaurant", "restaurantName imageUrl city deliveryPrice") // Only select needed fields
+      .populate("restaurant", "restaurantName imageUrl city deliveryPrice estimatedDeliveryTime") // Only select needed fields
       .populate("user", "name email") // Only select needed fields
       .sort({ createdAt: -1 }) // Sort by most recent first
       .lean();

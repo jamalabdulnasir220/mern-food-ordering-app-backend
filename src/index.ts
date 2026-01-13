@@ -9,6 +9,7 @@ import restaurantRouter from "./routes/restaurantRouter.js";
 import allRestaurantsRouter from "./routes/allRestaurantsRouter.js";
 import orderRouter from "./routes/orderRouter.js";
 import adminRouter from "./routes/adminRouter.js";
+import reviewRouter from "./routes/reviewRouter.js";
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use("/api", restaurantRouter);
 app.use("/api", allRestaurantsRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api", reviewRouter);
 
 async function startServer() {
   try {

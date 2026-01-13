@@ -24,19 +24,20 @@ const restaurantSchema = new mongoose.Schema({
   menuItems: [menuItemSchema],
   imageUrl: { type: String, required: true },
   lastUpdated: { type: Date, required: true },
-  approvalStatus: { 
-    type: String, 
-    enum: ["pending", "approved", "rejected"], 
-    default: "approved" // Default to approved for backward compatibility
+  approvalStatus: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "approved", // Default to approved for backward compatibility
   },
+  averageRating: { type: Number, min: 0, max: 5 },
+  totalReviews: { type: Number, default: 0 },
 });
 
-// Add indexes for frequently queried fields
-restaurantSchema.index({ city: 1, approvalStatus: 1 }); // For search queries
-restaurantSchema.index({ user: 1 }); // For finding restaurant by user
-restaurantSchema.index({ approvalStatus: 1 }); // For admin queries
-restaurantSchema.index({ lastUpdated: -1 }); // For sorting
-restaurantSchema.index({ restaurantName: "text", cuisines: "text" }); // Text search index
+restaurantSchema.index({ city: 1, approvalStatus: 1 }); 
+restaurantSchema.index({ user: 1 }); 
+restaurantSchema.index({ approvalStatus: 1 }); 
+restaurantSchema.index({ lastUpdated: -1 }); 
+restaurantSchema.index({ restaurantName: "text", cuisines: "text" }); 
 
 const Restaurant = mongoose.model("Restaurant", restaurantSchema);
 
