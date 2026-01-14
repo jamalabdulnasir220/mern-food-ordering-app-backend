@@ -22,9 +22,16 @@ const userSchema = new mongoose.Schema({
   country: {
     type: String,
   },
+  phoneNumber: {
+    type: String,
+  },
   favorites: {
     type: [String],
     default: [],
+  },
+  notificationPreferences: {
+    email: { type: Boolean, default: true },
+    sms: { type: Boolean, default: true },
   },
   role: {
     type: String,
