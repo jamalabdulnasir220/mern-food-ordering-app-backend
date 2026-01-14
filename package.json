@@ -15,6 +15,7 @@
   "type": "module",
   "dependencies": {
     "@types/multer": "^2.0.0",
+    "@types/nodemailer": "^7.0.5",
     "cloudinary": "^2.8.0",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
@@ -26,7 +27,9 @@
     "mongodb": "^7.0.0",
     "mongoose": "^8.20.0",
     "multer": "^2.0.2",
-    "stripe": "^20.1.0"
+    "nodemailer": "^7.0.12",
+    "stripe": "^20.1.0",
+    "twilio": "^5.11.2"
   },
   "devDependencies": {
     "@types/compression": "^1.8.1",

@@ -32,7 +32,15 @@ const createCurrentUser = async (req: Request, res: Response) => {
 const updateUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
-    const { name, addressLine1, country, city, favorites } = req.body;
+    const {
+      name,
+      addressLine1,
+      country,
+      city,
+      phoneNumber,
+      favorites,
+      notificationPreferences,
+    } = req.body;
 
     const user = await User.findById(userId);
 
@@ -44,8 +52,14 @@ const updateUser = async (req: Request, res: Response) => {
     user.addressLine1 = addressLine1;
     user.country = country;
     user.city = city;
+    if (phoneNumber !== undefined) {
+      user.phoneNumber = phoneNumber;
+    }
     if (favorites) {
       user.favorites = favorites;
+    }
+    if (notificationPreferences) {
+      user.notificationPreferences = notificationPreferences;
     }
 
     const updatedUser = await user.save();

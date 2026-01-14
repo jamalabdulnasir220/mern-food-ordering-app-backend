@@ -2,6 +2,10 @@ import Stripe from "stripe";
 import type { Response, Request } from "express";
 import Restaurant, { type MenuItemType } from "../models/restaurant.js";
 import Order from "../models/order.js";
+import {
+  sendOrderConfirmationNotifications,
+  sendOrderStatusUpdateNotifications,
+} from "../services/notificationService.js";
 
 const STRIPE = new Stripe(process.env.STRIPE_API_KEY as string);
 const FRONTEND_URL = process.env.FRONTEND_URL;
@@ -28,6 +32,9 @@ export const updateMyOrderStatus = async (req: Request, res: Response) => {
 
     await order.save();
 
+    // Send status update notifications
+    await sendOrderStatusUpdateNotifications(order._id.toString(), status);
+
     res.status(200).json(order);
   } catch (error) {
     console.log(error);
@@ -38,7 +45,10 @@ export const updateMyOrderStatus = async (req: Request, res: Response) => {
 export const getMyOrder = async (req: Request, res: Response) => {
   try {
     const orders = await Order.find({ user: req.userId })
-      .populate("restaurant", "restaurantName imageUrl city deliveryPrice estimatedDeliveryTime") // Only select needed fields
+      .populate(
+        "restaurant",
+        "restaurantName imageUrl city deliveryPrice estimatedDeliveryTime"
+      ) // Only select needed fields
       .populate("user", "name email") // Only select needed fields
       .sort({ createdAt: -1 }) // Sort by most recent first
       .lean();
@@ -62,6 +72,7 @@ type CheckoutSessionRequest = {
     name: string;
     addressLine1: string;
     city: string;
+    phoneNumber?: string;
   };
   restaurantId: string;
 };
@@ -91,6 +102,9 @@ export const stripeWebhookHandler = async (req: Request, res: Response) => {
     order.status = "paid";
 
     await order.save();
+
+    // Send notifications for paid status
+    await sendOrderStatusUpdateNotifications(order._id.toString(), "paid");
   }
 
   res.status(200).send();
@@ -139,6 +153,10 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
     }
 
     await newOrder.save();
+
+    // Send order confirmation notifications
+    await sendOrderConfirmationNotifications(newOrder._id.toString());
+
     res.json({ url: session.url });
   } catch (error: any) {
     console.log(error);
