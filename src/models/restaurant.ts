@@ -31,13 +31,18 @@ const restaurantSchema = new mongoose.Schema({
   },
   averageRating: { type: Number, min: 0, max: 5 },
   totalReviews: { type: Number, default: 0 },
+  // Opening hours & availability
+  openingTime: { type: String }, 
+  closingTime: { type: String }, 
+  daysOpen: [{ type: String }], 
+  isTemporarilyClosed: { type: Boolean, default: false },
 });
 
-restaurantSchema.index({ city: 1, approvalStatus: 1 }); 
-restaurantSchema.index({ user: 1 }); 
-restaurantSchema.index({ approvalStatus: 1 }); 
-restaurantSchema.index({ lastUpdated: -1 }); 
-restaurantSchema.index({ restaurantName: "text", cuisines: "text" }); 
+restaurantSchema.index({ city: 1, approvalStatus: 1 });
+restaurantSchema.index({ user: 1 });
+restaurantSchema.index({ approvalStatus: 1 });
+restaurantSchema.index({ lastUpdated: -1 });
+restaurantSchema.index({ restaurantName: "text", cuisines: "text" });
 
 const Restaurant = mongoose.model("Restaurant", restaurantSchema);
 
