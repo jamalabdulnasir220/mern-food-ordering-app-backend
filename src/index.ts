@@ -1,4 +1,8 @@
-import express, { type Request, type Response } from "express";
+import express, {
+  type Request,
+  type Response,
+  type NextFunction,
+} from "express";
 import cors from "cors";
 import compression from "compression";
 import "dotenv/config";
@@ -10,6 +14,7 @@ import allRestaurantsRouter from "./routes/allRestaurantsRouter.js";
 import orderRouter from "./routes/orderRouter.js";
 import adminRouter from "./routes/adminRouter.js";
 import reviewRouter from "./routes/reviewRouter.js";
+import multer from "multer";
 
 const app = express();
 
@@ -39,6 +44,23 @@ app.use("/api", allRestaurantsRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api", reviewRouter);
+
+// Global error handler
+// This allows us to catch Multer file size errors and return a clean JSON response
+app.use(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (err: any, req: Request, res: Response, next: NextFunction) => {
+    if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({
+        message: "FILE_TOO_LARGE",
+        details: "Each uploaded image must be 5MB or less.",
+      });
+    }
+
+    console.error("Unhandled error:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+);
 
 async function startServer() {
   try {
