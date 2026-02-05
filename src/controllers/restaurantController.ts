@@ -101,9 +101,15 @@ export const updateMyRestaurant = async (req: Request, res: Response) => {
     restaurant.deliveryPrice = req.body.deliveryPrice;
     restaurant.estimatedDeliveryTime = req.body.estimatedDeliveryTime;
     restaurant.cuisines = req.body.cuisines;
+    restaurant.openingTime = req.body.openingTime;
+    restaurant.closingTime = req.body.closingTime;
+    restaurant.daysOpen = req.body.daysOpen;
+    if (typeof req.body.isTemporarilyClosed !== "undefined") {
+      restaurant.isTemporarilyClosed = req.body.isTemporarilyClosed;
+    }
 
     // Assign menuItems from body first (contains text fields and existing imageUrls if sent)
-    // Note: If menuItems is empty array in body, it clears them.
+    // If menuItems is empty array in body, it clears them.
     if (req.body.menuItems) {
       restaurant.menuItems = req.body.menuItems;
     }
