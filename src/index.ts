@@ -15,6 +15,8 @@ import orderRouter from "./routes/orderRouter.js";
 import adminRouter from "./routes/adminRouter.js";
 import reviewRouter from "./routes/reviewRouter.js";
 import multer from "multer";
+import { serve } from "inngest/express";
+import { inngest, functions } from "./inngest/index.js";
 
 const app = express();
 
@@ -45,6 +47,9 @@ app.use("/api/order", orderRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api", reviewRouter);
 
+// Set up the "/api/inngest" (recommended) routes with the serve handler
+app.use("/api/inngest", serve({ client: inngest, functions }));
+
 // Global error handler
 // This allows us to catch Multer file size errors and return a clean JSON response
 app.use(
@@ -59,7 +64,7 @@ app.use(
 
     console.error("Unhandled error:", err);
     return res.status(500).json({ message: "Internal server error" });
-  }
+  },
 );
 
 async function startServer() {
@@ -71,7 +76,7 @@ async function startServer() {
         maxPoolSize: 10, // Maintain up to 10 socket connections
         serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
         socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      }
+      },
     );
     console.log("Connected to the database");
 
