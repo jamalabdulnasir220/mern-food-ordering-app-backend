@@ -6,25 +6,13 @@ import User from "../models/user.js";
 // Create transporter - configure based on your email service
 // For production, use services like SendGrid, AWS SES, or Gmail SMTP
 const createTransporter = () => {
-  // Using Gmail SMTP as example - replace with your email service
-  if (process.env.EMAIL_SERVICE === "gmail") {
-    return nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD, // Use App Password for Gmail
-      },
-    });
-  }
-
   // Generic SMTP configuration
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: parseInt(process.env.SMTP_PORT || "587"),
-    secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
+    host: "smtp-relay.brevo.com",
+    port: 587,
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
+      pass: process.env.SMTP_PASS,
     },
   });
 };
@@ -35,7 +23,7 @@ const transporter = createTransporter();
 const getOrderConfirmationTemplate = (
   order: any,
   restaurant: any,
-  userName: string
+  userName: string,
 ) => {
   const orderDate = new Date(order.createdAt).toLocaleString();
   const itemsList = order.cartItems
@@ -135,7 +123,7 @@ const getOrderStatusUpdateTemplate = (
   order: any,
   restaurant: any,
   userName: string,
-  newStatus: string
+  newStatus: string,
 ) => {
   const statusMessages: Record<string, string> = {
     paid: "Your payment has been confirmed!",
@@ -236,7 +224,7 @@ export const sendOrderConfirmationEmail = async (order: any) => {
 
     if (!restaurant || !user) {
       console.error(
-        "Restaurant or user not found for order confirmation email"
+        "Restaurant or user not found for order confirmation email",
       );
       return;
     }
@@ -244,11 +232,11 @@ export const sendOrderConfirmationEmail = async (order: any) => {
     const template = getOrderConfirmationTemplate(
       order,
       restaurant,
-      user.name || "Customer"
+      user.name || "Customer",
     );
 
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+      from: process.env.EMAIL_FROM,
       to: order.deliveryDetails.email,
       subject: template.subject,
       html: template.html,
@@ -256,7 +244,7 @@ export const sendOrderConfirmationEmail = async (order: any) => {
     });
 
     console.log(
-      `Order confirmation email sent to ${order.deliveryDetails.email}`
+      `Order confirmation email sent to ${order.deliveryDetails.email}`,
     );
   } catch (error) {
     console.error("Error sending order confirmation email:", error);
@@ -266,7 +254,7 @@ export const sendOrderConfirmationEmail = async (order: any) => {
 
 export const sendOrderStatusUpdateEmail = async (
   order: any,
-  newStatus: string
+  newStatus: string,
 ) => {
   try {
     const restaurant = await Restaurant.findById(order.restaurant).lean();
@@ -281,11 +269,11 @@ export const sendOrderStatusUpdateEmail = async (
       order,
       restaurant,
       user.name || "Customer",
-      newStatus
+      newStatus,
     );
 
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+      from: process.env.EMAIL_FROM,
       to: order.deliveryDetails.email,
       subject: template.subject,
       html: template.html,
@@ -293,7 +281,7 @@ export const sendOrderStatusUpdateEmail = async (
     });
 
     console.log(
-      `Order status update email sent to ${order.deliveryDetails.email}`
+      `Order status update email sent to ${order.deliveryDetails.email}`,
     );
   } catch (error) {
     console.error("Error sending order status update email:", error);
