@@ -4,4 +4,15 @@ import { Inngest } from "inngest";
 export const inngest = new Inngest({ id: "food-ordering-app" });
 
 // Create an empty array where we'll export future Inngest functions
-export const functions = [];
+
+export const orderCreated = inngest.createFunction(
+  {
+    id: "order-created",
+  },
+  { event: "order.created" },
+  async ({ event }) => {
+    console.log("Order Created", event);
+  },
+);
+
+export const functions = [orderCreated];
