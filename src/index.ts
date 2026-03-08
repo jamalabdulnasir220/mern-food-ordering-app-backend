@@ -15,8 +15,8 @@ import orderRouter from "./routes/orderRouter.js";
 import adminRouter from "./routes/adminRouter.js";
 import reviewRouter from "./routes/reviewRouter.js";
 import multer from "multer";
-import { serve } from "inngest/express";
-import { inngest, functions } from "./inngest/index.js";
+// import { serve } from "inngest/express";
+// import { inngest, functions } from "./inngest/index.js";
 
 const app = express();
 
@@ -48,7 +48,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api", reviewRouter);
 
 // Set up the "/api/inngest" (recommended) routes with the serve handler
-app.use("/api/inngest", serve({ client: inngest, functions }));
+// app.use("/api/inngest", serve({ client: inngest, functions }));
 
 // Global error handler
 // This allows us to catch Multer file size errors and return a clean JSON response
