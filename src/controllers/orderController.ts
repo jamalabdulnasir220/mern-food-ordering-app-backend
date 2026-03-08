@@ -2,10 +2,10 @@ import Stripe from "stripe";
 import type { Response, Request } from "express";
 import Restaurant, { type MenuItemType } from "../models/restaurant.js";
 import Order from "../models/order.js";
-import {
-  sendOrderConfirmationNotifications,
-  sendOrderStatusUpdateNotifications,
-} from "../services/notificationService.js";
+// import {
+//   sendOrderConfirmationNotifications,
+//   sendOrderStatusUpdateNotifications,
+// } from "../services/notificationService.js";
 
 const STRIPE = new Stripe(process.env.STRIPE_API_KEY as string);
 const FRONTEND_URL = process.env.FRONTEND_URL;
@@ -33,7 +33,7 @@ export const updateMyOrderStatus = async (req: Request, res: Response) => {
     await order.save();
 
     // Send status update notifications
-    await sendOrderStatusUpdateNotifications(order._id.toString(), status);
+    // await sendOrderStatusUpdateNotifications(order._id.toString(), status);
 
     res.status(200).json(order);
   } catch (error) {
@@ -104,7 +104,7 @@ export const stripeWebhookHandler = async (req: Request, res: Response) => {
     await order.save();
 
     // Send notifications for paid status
-    await sendOrderStatusUpdateNotifications(order._id.toString(), "paid");
+    // await sendOrderStatusUpdateNotifications(order._id.toString(), "paid");
   }
 
   res.status(200).send();
@@ -155,7 +155,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
     await newOrder.save();
 
     // Send order confirmation notifications
-    await sendOrderConfirmationNotifications(newOrder._id.toString());
+    // await sendOrderConfirmationNotifications(newOrder._id.toString());
 
     res.json({ url: session.url });
   } catch (error: any) {
