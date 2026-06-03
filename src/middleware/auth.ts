@@ -13,7 +13,7 @@ declare global {
 }
 
 const audience = process.env.AUTH0_AUDIENCE;
-const issuerBaseURL = process.env.AUTH0_ISSUER_BASE_URL;
+const issuerBaseURL = process.env.AUTH0_ISSUER_BASE_URL?.replace(/\/$/, "");
 
 if (!audience || !issuerBaseURL) {
   throw new Error(

@@ -43,18 +43,61 @@ export const updateMyOrderStatus = async (req: Request, res: Response) => {
   }
 };
 
+const computeOrderTotal = (
+  cartItems: { menuItemId: string; quantity: string }[],
+  menuItems: MenuItemType[],
+  deliveryPrice: number,
+): number => {
+  const subtotal = cartItems.reduce((acc, cartItem) => {
+    const menuItem = menuItems.find(
+      (item) => item._id.toString() === cartItem.menuItemId.toString(),
+    );
+    if (!menuItem) {
+      return acc;
+    }
+    return acc + menuItem.price * parseInt(cartItem.quantity, 10);
+  }, 0);
+
+  return subtotal + deliveryPrice;
+};
+
 export const getMyOrder = async (req: Request, res: Response) => {
   try {
     const orders = await Order.find({ user: req.userId })
       .populate(
         "restaurant",
-        "restaurantName imageUrl city deliveryPrice estimatedDeliveryTime"
-      ) // Only select needed fields
-      .populate("user", "name email") // Only select needed fields
-      .sort({ createdAt: -1 }) // Sort by most recent first
+        "restaurantName imageUrl city deliveryPrice estimatedDeliveryTime menuItems",
+      )
+      .populate("user", "name email")
+      .sort({ createdAt: -1 })
       .lean();
 
-    res.json(orders);
+    const ordersWithTotal = orders.map((order) => {
+      if (
+        order.totalAmount != null ||
+        !order.restaurant ||
+        typeof order.restaurant !== "object" ||
+        !("menuItems" in order.restaurant)
+      ) {
+        return order;
+      }
+
+      const restaurant = order.restaurant as {
+        menuItems: MenuItemType[];
+        deliveryPrice: number;
+      };
+
+      return {
+        ...order,
+        totalAmount: computeOrderTotal(
+          order.cartItems,
+          restaurant.menuItems,
+          restaurant.deliveryPrice,
+        ),
+      };
+    });
+
+    res.json(ordersWithTotal);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
@@ -123,21 +166,26 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       throw new Error("Restaurant not found");
     }
 
+    const lineItems = createLineItems(
+      checkoutSessionRequest,
+      restaurant.menuItems,
+    );
+
     const newOrder = new Order({
       restaurant: restaurant,
       user: req.userId,
       status: "placed",
       deliveryDetails: checkoutSessionRequest.deliveryDetails,
       cartItems: checkoutSessionRequest.cartItems,
+      totalAmount: computeOrderTotal(
+        checkoutSessionRequest.cartItems,
+        restaurant.menuItems,
+        restaurant.deliveryPrice,
+      ),
       createdAt: new Date(),
     });
 
     // create the line items --> These are the items we see on the stripe page on left handside, representing the things we are buying
-
-    const lineItems = createLineItems(
-      checkoutSessionRequest,
-      restaurant.menuItems
-    );
 
     //   we send the lineItems to stripe. it is more or less like our req body now.
     const session = await createSession(
