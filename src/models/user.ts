@@ -48,8 +48,7 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// Add indexes for frequently queried fields
-// userSchema.index({ auth0Id: 1 }); // Already unique, but explicit index helps
+
 userSchema.index({ role: 1 }); // For admin queries filtering by role
 
 const User = mongoose.model("User", userSchema);
