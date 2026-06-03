@@ -5,10 +5,10 @@ import {
   sendOrderConfirmationEmail,
   sendOrderStatusUpdateEmail,
 } from "./emailService.js";
-import {
-  sendOrderConfirmationSMS,
-  sendOrderStatusUpdateSMS,
-} from "./smsService.js";
+// import {
+//   sendOrderConfirmationSMS,
+//   sendOrderStatusUpdateSMS,
+// } from "./smsService.js";
 
 /**
  * Send order confirmation notifications (email and SMS)
@@ -38,12 +38,12 @@ export const sendOrderConfirmationNotifications = async (orderId: string) => {
     }
 
     // Send SMS notification
-    if (smsEnabled) {
-      const phoneNumber = order.deliveryDetails?.phoneNumber || user.phoneNumber;
-      if (phoneNumber) {
-        await sendOrderConfirmationSMS(phoneNumber, order, restaurant);
-      }
-    }
+    // if (smsEnabled) {
+    //   const phoneNumber = order.deliveryDetails?.phoneNumber || user.phoneNumber;
+    //   if (phoneNumber) {
+    //     await sendOrderConfirmationSMS(phoneNumber, order, restaurant);
+    //   }
+    // }
   } catch (error) {
     console.error("Error sending order confirmation notifications:", error);
     // Don't throw - notification failures shouldn't break the order flow
@@ -81,17 +81,17 @@ export const sendOrderStatusUpdateNotifications = async (
     }
 
     // Send SMS notification
-    if (smsEnabled) {
+    // if (smsEnabled) {
       const phoneNumber = order.deliveryDetails?.phoneNumber || user.phoneNumber;
-      if (phoneNumber) {
-        await sendOrderStatusUpdateSMS(
-          phoneNumber,
-          order,
-          restaurant,
-          newStatus
-        );
-      }
-    }
+      // if (phoneNumber) {
+      //   await sendOrderStatusUpdateSMS(
+      //     phoneNumber,
+      //     order,
+      //     restaurant,
+      //     newStatus
+      //   );
+      // }
+    // }
   } catch (error) {
     console.error("Error sending order status update notifications:", error);
     // Don't throw - notification failures shouldn't break the order flow
